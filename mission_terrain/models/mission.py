@@ -12,11 +12,13 @@ class MissionTerrain(models.Model):
 
     name = fields.Char(string="Référence", required=True, copy=False, default="Nouveau")
 
-    @api.model
-    def create(self, vals):
-        if vals.get('name', 'Nouveau') == 'Nouveau':
-            vals['name'] = self.env['ir.sequence'].next_by_code('mission.terrain') or '/'
-        return super().create(vals)
+    @api.model_create_multi
+    def create(self, vals_list):
+        for vals in vals_list:
+            if vals.get('name', 'Nouveau') == 'Nouveau':
+                vals['name'] = self.env['ir.sequence'].next_by_code('mission.terrain') or '/'
+
+        return super().create(vals_list)
 
     objet = fields.Char(string="Objet", required=True)
     destination = fields.Char(string="Destination", required=True)
@@ -102,7 +104,7 @@ class MissionTerrain(models.Model):
                         minute=minutes
                     )
 
-                if (departure_datetime - now) <= timedelta(hours=72):
+                if (departure_datetime - now) <= timedelta(hours=48):
                     raise ValidationError(
                         "La demande doit être faite au moins 72h avant le départ."
                     )
@@ -148,11 +150,13 @@ class MissionTerrain(models.Model):
             'type': 'ir.actions.act_window',
             'name': 'Participants',
             'res_model': 'mission.participant',
-            'view_mode': 'tree,form',
+            'view_mode': 'list,form',
+            'views': [
+                (self.env.ref('mission_terrain.view_participant_list').id, 'list'),
+                (self.env.ref('mission_terrain.view_participant_form').id, 'form')
+            ],
             'domain': [('mission_id', '=', self.id)],
-            'context': {
-                'default_mission_id': self.id
-            }
+            'context': {'default_mission_id': self.id},
         }
 
     #  WORKFLOW

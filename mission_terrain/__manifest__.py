@@ -9,6 +9,7 @@
         'security/ir.model.access.csv',
         'data/sequence.xml',
         'views/mission_views.xml',
+        'views/participant_views.xml',
     ],
     'application': True,
     'installable': True,
