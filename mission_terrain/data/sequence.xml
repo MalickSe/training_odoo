@@ -1,0 +1,11 @@
+<odoo>
+
+    <record id="seq_mission_terrain" model="ir.sequence">
+        <field name="name">Mission Terrain</field>
+        <field name="code">mission.terrain</field>
+        <field name="prefix">MT/SEN/</field>
+        <field name="padding">4</field>
+        <field name="number_increment">1</field>
+    </record>
+
+</odoo>
