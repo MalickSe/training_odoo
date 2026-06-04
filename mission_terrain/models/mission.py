@@ -109,6 +109,25 @@ class MissionTerrain(models.Model):
                         "La demande doit être faite au moins 72h avant le départ."
                     )
 
+    # CONTRAINTE LIMITATION PARTICIPANT
+
+    @api.constrains('participant_ids', 'mission_type')
+    def _check_participant_limit(self):
+        for rec in self:
+            if rec.mission_type == 'vehicule':
+
+                participants = rec.participant_ids.filtered(lambda p: not p.is_driver)
+                drivers = rec.participant_ids.filtered(lambda p: p.is_driver)
+
+                if len(drivers) > 1:
+                    raise ValidationError("Une mission ne peut avoir qu'un seul chauffeur.")
+
+                if len(participants) > 4:
+                    raise ValidationError("Maximum 4 participants autorisés pour une mission avec véhicule.")
+
+                if len(rec.participant_ids) > 5:
+                    raise ValidationError("Maximum 5 personnes (chauffeur inclus) pour une mission avec véhicule.")
+
     # METHODES
 
     def action_submit(self):
@@ -119,24 +138,34 @@ class MissionTerrain(models.Model):
             rec.state = 'submitted'
 
     def action_validate_security(self):
+        if not self.env.user.has_group('mission_terrain.group_mission_security'):
+            raise UserError("Seul le Security Advisor peut valider cette étape.")
+
         for rec in self:
             rec.state = 'security'
 
     def action_assign_fleet(self):
-        for rec in self:
-            if rec.mission_type == 'vehicule' and not rec.vehicle_id:
-                raise UserError("Veuillez assigner un véhicule.")
+        if not self.env.user.has_group('mission_terrain.group_mission_fleet'):
+            raise UserError("Accès réservé au gestionnaire de flotte.")
 
+        for rec in self:
             rec.state = 'fleet'
 
     def action_validate_finance(self):
-        for rec in self:
-            if not rec.ligne_budgetaire:
-                raise UserError("Ligne budgétaire obligatoire.")
+        if not self.env.user.has_group('mission_terrain.group_mission_finance'):
+            raise UserError("Accès réservé au service Finance.")
 
+        for rec in self:
             rec.state = 'finance'
 
     def action_approve(self):
+        if not self.env.user.has_group('mission_terrain.group_mission_manager'):
+            raise UserError("Seul un approbateur peut valider cette mission.")
+
+        for rec in self:
+            rec.state = 'approval'
+
+    def action_done(self):
         for rec in self:
             rec.state = 'done'
 

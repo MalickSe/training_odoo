@@ -6,6 +6,7 @@
     'author': 'Malick/MalickSe',
     'depends': ['base', 'project', 'mail', 'fleet'],
     'data': [
+        'security/groups.xml',
         'security/ir.model.access.csv',
         'data/sequence.xml',
         'views/mission_views.xml',

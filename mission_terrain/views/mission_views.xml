@@ -16,34 +16,47 @@
             type="object"
             string="Soumettre"
             class="btn-primary"
+            groups="mission_terrain.group_mission_user"
             invisible="state != 'draft'"/>
 
     <button name="action_validate_security"
             type="object"
             string="Validation Sécurité"
+            groups="mission_terrain.group_mission_security"
             invisible="state != 'submitted'"/>
 
     <button name="action_assign_fleet"
             type="object"
             string="Traitement Flotte"
+            groups="mission_terrain.group_mission_fleet"
             invisible="state != 'security'"/>
 
     <button name="action_validate_finance"
             type="object"
             string="Validation Finance"
+            groups="mission_terrain.group_mission_finance"
             invisible="state != 'fleet'"/>
 
     <button name="action_approve"
             type="object"
             string="Approuver"
             class="btn-success"
+            groups="mission_terrain.group_mission_manager"
             invisible="state != 'finance'"/>
+
+
+    <button name="action_done"
+            type="object"
+            string="Terminer"
+            class="btn-success"
+            groups="mission_terrain.group_mission_manager"
+            invisible="state != 'approval'"/>
 
     <button name="action_reject"
             type="object"
             string="Rejeter"
             class="btn-danger"
-            invisible="state not in ['submitted','security','fleet','finance']"/>
+            invisible="state not in ['security','fleet','finance','approval']"/>
 
     <field name="state" widget="statusbar"/>
 
@@ -66,32 +79,41 @@
                 <!--  INFOS GÉNÉRALES -->
                 <group>
                     <group>
-                        <field name="name"/>
-                        <field name="objet"/>
-                        <field name="destination"/>
-                        <field name="mission_type"/>
-                        <field name="project_id"/>
+                        <field name="name" readonly="state != 'draft'"/>
+                        <field name="objet" readonly="state != 'draft'"/>
+                        <field name="destination" readonly="state != 'draft'"/>
+                        <field name="mission_type" readonly="state != 'draft'"/>
+                        <field name="project_id" readonly="state != 'draft'"/>
                     </group>
 
                     <group>
-                        <field name="date_depart"/>
-                        <field name="heure_depart"/>
-                        <field name="date_retour"/>
-                        <field name="heure_retour"/>
+                        <field name="date_depart" readonly="state != 'draft'"/>
+                        <field name="heure_depart" readonly="state != 'draft'"/>
+                        <field name="date_retour" readonly="state != 'draft'"/>
+                        <field name="heure_retour" readonly="state != 'draft'"/>
                     </group>
                 </group>
 
                 <!--  LOGISTIQUE -->
-                <group string="Logistique">
-                    <field name="vehicle_id"/>
-                    <field name="driver_id"/>
-                </group>
+
+            <group string="Logistique"
+                   groups="mission_terrain.group_mission_fleet,mission_terrain.group_mission_manager">
+
+                <field name="vehicle_id"
+                       invisible="state not in ['fleet','finance','approval','done']"
+                       readonly="state != 'fleet'"/>
+
+                <field name="driver_id"
+                       invisible="state not in ['fleet','finance','approval','done']"
+                       readonly="state != 'fleet'"/>
+
+            </group>
 
                 <!--  FINANCE -->
                 <group string="Finance">
-                    <field name="ligne_budgetaire"/>
-                    <field name="requested_amount"/>
-                    <field name="approved_amount"/>
+                    <field name="ligne_budgetaire" readonly="state != 'finance'" invisible="state not in ['finance','approval','done']"/>
+                    <field name="requested_amount" readonly="state != 'draft'"/>
+                    <field name="approved_amount" readonly="state != 'finance'"/>
                 </group>
 
                 <!--  DOCUMENT -->
@@ -124,7 +146,6 @@
 
     </field>
 </record>
-
 
     <!--  LIST -->
     <record id="view_mission_list" model="ir.ui.view">
