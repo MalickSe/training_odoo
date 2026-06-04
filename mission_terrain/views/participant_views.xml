@@ -10,6 +10,8 @@
             <field name="role"/>
             <field name="is_driver"/>
             <field name="per_diem"/>
+            <field name="nb_days" readonly="1"/>
+            <field name="total_per_diem" readonly="1"/>
         </list>
     </field>
 </record>
@@ -27,6 +29,8 @@
                     <field name="role"/>
                     <field name="is_driver"/>
                     <field name="per_diem"/>
+                    <field name="nb_days" readonly="1"/>
+                    <field name="total_per_diem" readonly="1"/>
                 </group>
             </sheet>
         </form>

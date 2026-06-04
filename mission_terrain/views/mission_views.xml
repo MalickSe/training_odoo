@@ -58,6 +58,21 @@
             class="btn-danger"
             invisible="state not in ['security','fleet','finance','approval']"/>
 
+
+    <button name="%(action_report_mission)d"
+            string="Imprimer OM"
+            type="action"
+            class="btn-secondary"
+            invisible="state != 'done'"/>
+
+
+    <button name="%(mission_terrain.action_report_mission_finance)d"
+            type="action"
+            string="Demande d'avance"
+            class="btn-primary"
+            invisible="state not in ['finance','approval','done']"/>
+
+
     <field name="state" widget="statusbar"/>
 
 </header>
@@ -91,13 +106,14 @@
                         <field name="heure_depart" readonly="state != 'draft'"/>
                         <field name="date_retour" readonly="state != 'draft'"/>
                         <field name="heure_retour" readonly="state != 'draft'"/>
+                        <field name="nb_days" readonly="1"/>
                     </group>
                 </group>
 
                 <!--  LOGISTIQUE -->
 
             <group string="Logistique"
-                   groups="mission_terrain.group_mission_fleet,mission_terrain.group_mission_manager">
+                   groups="mission_terrain.group_mission_fleet,mission_terrain.group_mission_finance,mission_terrain.group_mission_manager">
 
                 <field name="vehicle_id"
                        invisible="state not in ['fleet','finance','approval','done']"
@@ -112,8 +128,28 @@
                 <!--  FINANCE -->
                 <group string="Finance">
                     <field name="ligne_budgetaire" readonly="state != 'finance'" invisible="state not in ['finance','approval','done']"/>
-                    <field name="requested_amount" readonly="state != 'draft'"/>
-                    <field name="approved_amount" readonly="state != 'finance'"/>
+                    <field name="requested_amount" readonly="1"/>
+
+
+                    <!--  Hébergement -->
+                        <field name="hebergement_journalier"
+                               readonly="state != 'finance'"
+                               invisible="state not in ['finance','approval','done']"/>
+
+                        <field name="hebergement_total"
+                               readonly="1"
+                               invisible="state not in ['finance','approval','done']"/>
+
+                    <!--  Transport -->
+                        <field name="transport_amount"
+                               readonly="state != 'finance'"
+                               invisible="state not in ['finance','approval','done']"/>
+
+                     <!-- Total final -->
+                        <field name="approved_amount"
+                               readonly="1" style="font-weight:bold; font-size:16px;" invisible="state not in ['finance','approval','done']"/>
+
+
                 </group>
 
                 <!--  DOCUMENT -->
@@ -130,6 +166,8 @@
                                 <field name="role"/>
                                 <field name="is_driver"/>
                                 <field name="per_diem"/>
+                                <field name="nb_days" readonly="1"/>
+                                <field name="total_per_diem" readonly="1"/>
                             </list>
                         </field>
                     </page>

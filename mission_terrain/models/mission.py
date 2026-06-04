@@ -75,8 +75,82 @@ class MissionTerrain(models.Model):
     #  FINANCE
 
     ligne_budgetaire = fields.Char("Ligne budgétaire")
-    requested_amount = fields.Float("Montant demandé")
-    approved_amount = fields.Float("Montant approuvé")
+
+    requested_amount = fields.Float(
+        string="Montant demandé",
+        compute="_compute_requested_amount",
+        store=True
+    )
+
+    @api.depends('participant_ids.total_per_diem')
+    def _compute_requested_amount(self):
+        for rec in self:
+            total = 0.0
+            for p in rec.participant_ids:
+                total += p.total_per_diem
+            rec.requested_amount = total
+
+# CALCUL MONTANT APPROUVÉ
+
+    approved_amount = fields.Float(
+        string="Montant approuvé",
+        compute="_compute_approved_amount",
+        store=True
+    )
+
+    @api.depends(
+        'requested_amount',
+        'hebergement_total',
+        'transport_amount'
+    )
+    def _compute_approved_amount(self):
+        for rec in self:
+            rec.approved_amount = (
+                    rec.requested_amount
+                    + rec.hebergement_total
+                    + rec.transport_amount
+            )
+
+    # CALCUL NBRE DE JOURS
+    nb_days = fields.Integer(
+        string="Nombre de jours",
+        compute="_compute_nb_days",
+        store=True
+    )
+
+    @api.depends('date_depart', 'date_retour')
+    def _compute_nb_days(self):
+        for rec in self:
+            if rec.date_depart and rec.date_retour:
+                rec.nb_days = (rec.date_retour - rec.date_depart).days + 1
+            else:
+                rec.nb_days = 0
+
+        # CHAMP HEBERGEMENT
+    hebergement_journalier = fields.Float(
+        string="Hébergement / jour"
+    )
+
+    hebergement_total = fields.Float(
+        string="Hébergement total",
+        compute="_compute_hebergement_total",
+        store=True
+    )
+
+    @api.depends('hebergement_journalier', 'nb_days', 'participant_ids')
+    def _compute_hebergement_total(self):
+        for rec in self:
+            nb_participants = len(rec.participant_ids)
+            rec.hebergement_total = (
+                    rec.hebergement_journalier
+                    * rec.nb_days
+                    * nb_participants
+            )
+
+        # CHAMP TRANSPORT
+    transport_amount = fields.Float(
+        string="Transport"
+    )
 
     #  DOCUMENT
 

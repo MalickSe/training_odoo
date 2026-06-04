@@ -41,6 +41,24 @@ class MissionParticipant(models.Model):
 
     per_diem = fields.Float(string="Per diem")
 
+    total_per_diem = fields.Float(
+        string="Total Per Diem",
+        compute="_compute_total_per_diem",
+        store=True
+    )
+
+    nb_days = fields.Integer(
+        string="Nb jours",
+        related="mission_id.nb_days",
+        store=True,
+        readonly=True
+    )
+
+    @api.depends('per_diem', 'mission_id.nb_days')
+    def _compute_total_per_diem(self):
+        for rec in self:
+            rec.total_per_diem = rec.per_diem * rec.mission_id.nb_days
+
     #  CONTRAINTE
 
     @api.constrains('user_id')

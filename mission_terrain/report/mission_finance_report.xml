@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <template id="report_mission_finance">
+
+        <t t-call="web.basic_layout">
+            <t t-foreach="docs" t-as="doc">
+
+                <h2 style="text-align:center; color:#2E7D32;">
+                    DEMANDE D'AVANCE
+                </h2>
+
+                <br/>
+
+                <!-- INFOS GENERALES -->
+                <h3>Informations générales</h3>
+
+                <table style="width:100%;">
+                    <tr>
+                        <td><strong>Référence :</strong></td>
+                        <td><span t-field="doc.name"/></td>
+
+                        <td><strong>Projet :</strong></td>
+                        <td><span t-field="doc.project_id.name"/></td>
+                    </tr>
+
+                    <tr>
+                        <td><strong>Objet :</strong></td>
+                        <td><span t-field="doc.objet"/></td>
+
+                        <td><strong>Destination :</strong></td>
+                        <td><span t-field="doc.destination"/></td>
+                    </tr>
+                </table>
+
+                <br/>
+
+                <!-- DATES -->
+                <h3>Planning</h3>
+                <table style="width:100%;" class="table table-sm table-bordered">
+                    <tr>
+                        <th>Date départ</th>
+                        <th>Heure départ</th>
+                        <th>Date retour</th>
+                        <th>Heure retour</th>
+                    </tr>
+                    <tr>
+                        <td><span t-field="doc.date_depart"/></td>
+                        <td><span t-field="doc.heure_depart"/></td>
+                        <td><span t-field="doc.date_retour"/></td>
+                        <td><span t-field="doc.heure_retour"/></td>
+                    </tr>
+                </table>
+
+                <br/>
+
+                <!-- PARTICIPANTS -->
+                <h3>Détail Per Diem</h3>
+
+                <table class="table table-bordered" style="width:100%;">
+                    <thead>
+                        <tr>
+                            <th>Nom</th>
+                            <th>Rôle</th>
+                            <th>Per diem</th>
+                            <th>Jours</th>
+                            <th>Total</th>
+                            <th>Ligne budgetaire</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        <tr t-foreach="doc.participant_ids" t-as="p">
+                            <td><span t-field="p.user_id.name"/></td>
+                            <td><span t-field="p.role"/></td>
+                            <td><span t-field="p.per_diem"/></td>
+                            <td><span t-field="p.nb_days"/></td>
+                            <td><span t-field="p.total_per_diem"/></td>
+                            <td><span t-field="doc.ligne_budgetaire"/></td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <br/>
+
+                <!-- LOGISTIQUE -->
+                <h3>Logistique</h3>
+
+                <table class="table table-bordered">
+                    <tr>
+                        <th>Véhicule</th>
+                        <th>Immatriculation</th>
+                        <th>Chauffeur</th>
+                    </tr>
+                    <tr>
+                        <td><span t-field="doc.vehicle_id.name"/></td>
+                        <td><span t-field="doc.vehicle_id.license_plate"/></td>
+                        <td><span t-field="doc.driver_id.name"/></td>
+                    </tr>
+                </table>
+
+                <br/>
+
+                <!-- FINANCE -->
+                <h3>Résumé financier</h3>
+
+                <table class="table table-bordered" style="width:100%;">
+                    <tr>
+                        <td><strong>Total Per Diem</strong></td>
+                        <td><span t-field="doc.requested_amount"/></td>
+                    </tr>
+
+                    <tr>
+                        <td><strong>Hébergement</strong></td>
+                        <td><span t-field="doc.hebergement_total"/></td>
+                    </tr>
+
+                    <tr>
+                        <td><strong>Transport</strong></td>
+                        <td><span t-field="doc.transport_amount"/></td>
+                    </tr>
+
+                    <tr>
+                        <td><strong>TOTAL DEMANDÉ</strong></td>
+                        <td>
+                            <strong>
+                                <span t-field="doc.approved_amount"/>
+                            </strong>
+                        </td>
+                    </tr>
+                </table>
+
+                <br/><br/>
+
+                <!-- SIGNATURE -->
+                <table style="width:100%; text-align:center;">
+                    <tr>
+                        <td>
+                            <strong>Finance</strong><br/>
+                            ______________________
+                        </td>
+
+                        <td>
+                            <strong>Approbation</strong><br/>
+                            ______________________
+                        </td>
+                    </tr>
+                </table>
+
+            </t>
+        </t>
+
+    </template>
+
+    <!--ACTION REPORT -->
+    <record id="action_report_mission_finance" model="ir.actions.report">
+        <field name="name">Demande d'avance</field>
+        <field name="model">mission.terrain</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">mission_terrain.report_mission_finance</field>
+        <field name="print_report_name">'Demande avance - %s' % (object.name)</field>
+    </record>
+
+</odoo>
