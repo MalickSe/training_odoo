@@ -17,7 +17,7 @@
             string="Soumettre"
             class="btn-primary"
             groups="mission_terrain.group_mission_user"
-            invisible="state != 'draft'"/>
+             invisible="state != 'draft'"/>
 
     <button name="action_validate_security"
             type="object"
@@ -42,8 +42,7 @@
             string="Approuver"
             class="btn-success"
             groups="mission_terrain.group_mission_manager"
-            invisible="state != 'finance'"/>
-
+             invisible="state != 'finance'"/>
 
     <button name="action_done"
             type="object"
@@ -56,24 +55,39 @@
             type="object"
             string="Rejeter"
             class="btn-danger"
-            invisible="state not in ['security','fleet','finance','approval']"/>
-
+            invisible="state not in ['submitted','security','fleet','finance','approval']"/>
 
     <button name="%(action_report_mission)d"
             string="Imprimer OM"
             type="action"
             class="btn-secondary"
-            invisible="state != 'done'"/>
-
+            invisible="state not in ['done','review_finance','closed']"/>
 
     <button name="%(mission_terrain.action_report_mission_finance)d"
             type="action"
             string="Demande d'avance"
             class="btn-primary"
-            invisible="state not in ['finance','approval','done']"/>
+            invisible="state not in ['finance','approval','done','review_finance','closed']"/>
 
 
-    <field name="state" widget="statusbar"/>
+    <button name="action_start_review"
+            type="object"
+            string="Revue Finance"
+            class="btn-warning"
+            groups="mission_terrain.group_mission_finance"
+            invisible="state != 'done'"/>
+
+
+    <button name="action_close"
+            type="object"
+            string="Clôturer"
+            class="btn-success"
+            groups="mission_terrain.group_mission_finance"
+            invisible="state != 'review_finance'"/>
+
+
+
+    <field name="state" widget="statusbar" statusbar_visible="draft,submitted,security,fleet,finance,approval,done,review_finance,closed"/>
 
 </header>
 
@@ -134,28 +148,44 @@
                     <!--  Hébergement -->
                         <field name="hebergement_journalier"
                                readonly="state != 'finance'"
-                               invisible="state not in ['finance','approval','done']"/>
+                               invisible="state not in ['finance','approval','done','review_finance','closed']"/>
 
                         <field name="hebergement_total"
                                readonly="1"
-                               invisible="state not in ['finance','approval','done']"/>
+                               invisible="state not in ['finance','approval','done','review_finance','closed']"/>
 
                     <!--  Transport -->
                         <field name="transport_amount"
                                readonly="state != 'finance'"
-                               invisible="state not in ['finance','approval','done']"/>
+                               invisible="state not in ['finance','approval','done','review_finance','closed']"/>
 
                      <!-- Total final -->
                         <field name="approved_amount"
-                               readonly="1" style="font-weight:bold; font-size:16px;" invisible="state not in ['finance','approval','done']"/>
+                               readonly="1" style="font-weight:bold; font-size:16px;" invisible="state not in ['finance','approval','done','review_finance','closed']"/>
+
+                    <!-- Ecart Budget -->
+
+                        <field name="actual_amount"
+                               groups="mission_terrain.group_mission_finance"
+                               readonly="state != 'review_finance'"/>
+
+                        <field name="budget_variance"
+                               readonly="1" decoration-danger="budget_variance &gt; 0" decoration-success="budget_variance &lt; 0"/>
+
+                        <field name="variance_status"
+                               readonly="1"/>
 
 
                 </group>
 
                 <!--  DOCUMENT -->
+
                 <group string="TDR">
-                    <field name="tdr_file" filename="tdr_filename"/>
+
+<field name="tdr_note" widget="html" placeholder="Saisir les termes de référence..." readonly="state != 'draft'"/>
+
                 </group>
+
 
                 <!--  PARTICIPANTS -->
                 <notebook>

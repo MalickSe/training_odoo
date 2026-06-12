@@ -135,15 +135,38 @@
                 <!-- SIGNATURE -->
                 <table style="width:100%; text-align:center;">
                     <tr>
-                        <td>
-                            <strong>Finance</strong><br/>
-                            ______________________
+
+                    <!-- Finance -->
+                <td>
+                            <strong>Validation Finance</strong><br/>
+
+
+                    <t t-if="doc.validated_by_finance">
+                        <img t-att-src="'/web/image/res.users/%s/signature_image' % doc.validated_by_finance.id"
+                             style="height:70px; width:auto;"/>
+                    </t>
+
+
+                            <br/>
+
+                            <span t-field="doc.validated_by_finance.name"/>
                         </td>
+
+
+
 
                         <td>
                             <strong>Approbation</strong><br/>
-                            ______________________
+
+                            <t t-if="doc.approved_by">
+                                <img t-att-src="'/web/image/res.users/%s/signature_image' % doc.approved_by.id" style="height:70px; width:auto;"/>
+                            </t>
+
+                            <br/>
+
+                            <span t-field="doc.approved_by.name"/>
                         </td>
+
                     </tr>
                 </table>
 

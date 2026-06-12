@@ -11,7 +11,11 @@
         'security/groups.xml',
         'security/ir.model.access.csv',
         'data/sequence.xml',
+        'views/deplacement_views.xml',
+        'views/dashboard_views.xml',
+        'views/res_users_views.xml',
         'views/mission_views.xml',
+        'views/deplacement_views.xml',
         'views/participant_views.xml',
 
     ],

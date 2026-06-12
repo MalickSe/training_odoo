@@ -67,10 +67,43 @@ class MissionTerrain(models.Model):
         for rec in self:
             rec.participant_count = len(rec.participant_ids)
 
+    mission_count = fields.Integer(
+        string="Nombre de missions",
+        compute="_compute_mission_count",
+        store=True
+    )
+
+    def _compute_mission_count(self):
+        for rec in self:
+            rec.mission_count = 1
+
     #  LOGISTIQUE
 
     vehicle_id = fields.Many2one('fleet.vehicle', string="Véhicule")
     driver_id = fields.Many2one('res.partner', string="Chauffeur")
+
+    vehicle_usage_rate = fields.Float(
+        string="Taux utilisation (%)",
+        compute="_compute_vehicle_usage"
+    )
+
+    def _compute_vehicle_usage(self):
+
+        all_missions = self.env['mission.terrain'].search([])
+        total_missions = len(all_missions)
+
+        for rec in self:
+
+            if rec.vehicle_id and total_missions > 0:
+
+                vehicle_missions = all_missions.filtered(
+                    lambda m: m.vehicle_id == rec.vehicle_id
+                )
+
+                rec.vehicle_usage_rate = (len(vehicle_missions) / total_missions) * 100
+
+            else:
+                rec.vehicle_usage_rate = 0
 
     #  FINANCE
 
@@ -151,13 +184,82 @@ class MissionTerrain(models.Model):
     transport_amount = fields.Float(
         string="Transport"
     )
+    # CHAMP COMPUTE LOGISTIQUE
+
+    kpi_total_projects = fields.Integer(compute="_compute_kpis_logistique")
+    kpi_total_vehicule = fields.Integer(compute="_compute_kpis_logistique")
+    kpi_total_chauffeurs = fields.Integer(compute="_compute_kpis_logistique")
+    kpi_total_vehicles = fields.Integer(compute="_compute_kpis_logistique")
+
+    def _compute_kpis_logistique(self):
+
+        all_missions = self.env['mission.terrain'].search([])
+
+        total_projects = len(all_missions.mapped('project_id'))
+        total_vehicule = len(all_missions.filtered(lambda m: m.mission_type == 'vehicule'))
+        total_chauffeurs = len(all_missions.mapped('driver_id'))
+        total_vehicles = len(all_missions.mapped('vehicle_id'))
+
+        for rec in self:
+            rec.kpi_total_projects = total_projects
+            rec.kpi_total_vehicule = total_vehicule
+            rec.kpi_total_chauffeurs = total_chauffeurs
+            rec.kpi_total_vehicles = total_vehicles
 
     #  DOCUMENT
 
-    tdr_file = fields.Binary("TDR")
-    tdr_filename = fields.Char("Nom du fichier")
+    tdr_note = fields.Html(
+        string="TDR (Termes de référence)"
+    )
 
-   # CONTRAINTE 72H
+    # CHAMP SIGNATURE
+
+    validated_by_security = fields.Many2one(
+        'res.users',
+        string="Validé par (Security)"
+    )
+
+    validated_by_finance = fields.Many2one(
+        'res.users',
+        string="Validé par (Finance)"
+    )
+
+    approved_by = fields.Many2one(
+        'res.users',
+        string="Approuvé par"
+    )
+
+    actual_amount = fields.Float(
+        string="Montant réel"
+    )
+
+    budget_variance = fields.Float(
+        string="Écart budget",
+        compute="_compute_budget_variance",
+        store=True
+    )
+
+    variance_status = fields.Char(
+        string="Variance Budget",
+        compute="_compute_variance_status"
+    )
+
+    @api.depends('budget_variance')
+    def _compute_variance_status(self):
+        for rec in self:
+            if rec.budget_variance > 0:
+                rec.variance_status = "Dépassement"
+            elif rec.budget_variance < 0:
+                rec.variance_status = "Économie"
+            else:
+                rec.variance_status = "Respecté"
+
+    @api.depends('approved_amount', 'actual_amount')
+    def _compute_budget_variance(self):
+        for rec in self:
+            rec.budget_variance = rec.actual_amount - rec.approved_amount
+
+       # CONTRAINTE 72H
 
     @api.constrains('date_depart', 'heure_depart')
     def _check_delay_before_departure(self):
@@ -212,40 +314,60 @@ class MissionTerrain(models.Model):
             rec.state = 'submitted'
 
     def action_validate_security(self):
-        if not self.env.user.has_group('mission_terrain.group_mission_security'):
-            raise UserError("Seul le Security Advisor peut valider cette étape.")
-
         for rec in self:
+            if rec.state != 'submitted':
+                raise UserError("Action non autorisée")
+
             rec.state = 'security'
+            rec.validated_by_security = self.env.user
 
     def action_assign_fleet(self):
-        if not self.env.user.has_group('mission_terrain.group_mission_fleet'):
-            raise UserError("Accès réservé au gestionnaire de flotte.")
-
         for rec in self:
+            if rec.state != 'security':
+                raise UserError("Action non autorisée")
+
             rec.state = 'fleet'
 
     def action_validate_finance(self):
-        if not self.env.user.has_group('mission_terrain.group_mission_finance'):
-            raise UserError("Accès réservé au service Finance.")
-
         for rec in self:
+            if rec.state != 'fleet':
+                raise UserError("Action non autorisée")
+
             rec.state = 'finance'
+            rec.validated_by_finance = self.env.user
 
     def action_approve(self):
-        if not self.env.user.has_group('mission_terrain.group_mission_manager'):
-            raise UserError("Seul un approbateur peut valider cette mission.")
-
         for rec in self:
+            if rec.state != 'finance':
+                raise UserError("Action non autorisée")
+
             rec.state = 'approval'
+            rec.approved_by = self.env.user
 
     def action_done(self):
         for rec in self:
+            if rec.state != 'approval':
+                raise UserError("Action non autorisée")
+
             rec.state = 'done'
 
     def action_reject(self):
         for rec in self:
             rec.state = 'rejected'
+
+    def action_start_review(self):
+        for rec in self:
+            if rec.state != 'done':
+                raise UserError("La mission doit être terminée")
+
+            rec.state = 'review_finance'
+
+    def action_close(self):
+        for rec in self:
+            if rec.state != 'review_finance':
+                raise UserError("Revue financière requise avant clôture")
+
+            rec.state = 'closed'
 
     def action_view_participants(self):
         self.ensure_one()
@@ -262,7 +384,7 @@ class MissionTerrain(models.Model):
             'context': {'default_mission_id': self.id},
         }
 
-    #  WORKFLOW
+     #  WORKFLOW
 
     state = fields.Selection([
         ('draft', 'Brouillon'),
@@ -272,5 +394,7 @@ class MissionTerrain(models.Model):
         ('finance', 'Validation Finance'),
         ('approval', 'Approbation'),
         ('done', 'Terminée'),
+        ('review_finance', 'Revue Finance'),
+        ('closed', 'Clôturée'),
         ('rejected', 'Rejetée')
     ], default='draft', tracking=True)

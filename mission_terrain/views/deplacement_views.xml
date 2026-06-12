@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <!-- FORM VIEW -->
+    <record id="view_deplacement_form" model="ir.ui.view">
+        <field name="name">mission.deplacement.form</field>
+        <field name="model">mission.deplacement</field>
+        <field name="arch" type="xml">
+
+            <form string="Déplacement Journalier">
+
+                <!--  HEADER -->
+                <header>
+
+                    <button name="action_submit"
+                            type="object"
+                            string="Soumettre"
+                            class="btn-primary"
+                            invisible="state != 'draft'"/>
+
+                    <button name="action_assign_fleet"
+                            type="object"
+                            string="Affecter véhicule"
+                            class="btn-success"
+                            invisible="state != 'submitted'"/>
+
+                    <button name="action_done"
+                            type="object"
+                            string="Terminer"
+                            class="btn-primary"
+                            invisible="state != 'fleet'"/>
+
+                    <button name="action_reject"
+                            type="object"
+                            string="Rejeter"
+                            class="btn-danger"
+                            invisible="state == 'done'"/>
+
+                    <field name="state"
+                           widget="statusbar"
+                           statusbar_visible="draft,submitted,fleet,done,rejected"/>
+
+                </header>
+
+                <sheet>
+
+                    <group>
+                        <group>
+                            <field name="requester_id" readonly="state != 'draft'"/>
+                            <field name="date_deplacement" readonly="state != 'draft'"/>
+                            <field name="motif" readonly="state != 'draft'"/>
+                        </group>
+
+                        <group>
+                            <field name="heure_depart" readonly="state != 'draft'"/>
+                            <field name="heure_retour" readonly="state != 'draft'"/>
+                        </group>
+                    </group>
+
+
+                    <group string="Logistique"
+                   groups="mission_terrain.group_mission_fleet,mission_terrain.group_mission_manager">
+
+                <field name="vehicle_id"
+                       invisible="state not in ['submitted','fleet','approval','done']"
+                       readonly="state != 'submitted'"/>
+
+                <field name="driver_id"
+                       invisible="state not in ['submitted','fleet','approval','done']"
+                       readonly="state != 'submitted'"/>
+
+            </group>
+<notebook>
+                    <page string="Participants">
+                        <field name="participant_ids">
+                            <list editable="bottom">
+                                <field name="user_id"/>
+                                <field name="role"/>
+                            </list>
+                        </field>
+                    </page>
+                </notebook>
+                </sheet>
+
+            </form>
+
+        </field>
+    </record>
+
+
+<record id="view_deplacement_tree" model="ir.ui.view">
+    <field name="name">mission.deplacement.list</field>
+    <field name="model">mission.deplacement</field>
+    <field name="arch" type="xml">
+
+        <list string="Déplacements Journaliers" default_order="date_deplacement desc">
+
+            <field name="name"/>
+            <field name="requester_id"/>
+            <field name="date_deplacement"/>
+            <field name="heure_depart"/>
+            <field name="heure_retour"/>
+            <field name="vehicle_id"/>
+            <field name="driver_id"/>
+            <field name="state"/>
+
+        </list>
+
+    </field>
+</record>
+
+
+    <!-- ACTION -->
+    <record id="action_deplacement" model="ir.actions.act_window">
+        <field name="name">Déplacements Journaliers</field>
+        <field name="res_model">mission.deplacement</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <!-- MENU -->
+    <menuitem id="menu_deplacement"
+              name="Déplacements"
+              parent="mission_terrain.menu_mission_root"
+              action="mission_terrain.action_deplacement"/>
+
+</odoo>

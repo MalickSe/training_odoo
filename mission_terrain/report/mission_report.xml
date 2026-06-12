@@ -116,6 +116,11 @@
                     </tbody>
                 </table>
 
+                <br/>
+
+                <h3>TDR</h3>
+                <div t-field="doc.tdr_note"/>
+
                 <br/><br/>
 
                 <!-- SIGNATURE ZONE -->
@@ -126,15 +131,34 @@
                             ______________________
                         </td>
 
+
+                <!-- Security -->
                         <td>
                             <strong>Validation Sécurité</strong><br/>
-                            ______________________
+
+                            <t t-if="doc.validated_by_security">
+                                <img t-att-src="'/web/image/res.users/%s/signature_image' % doc.validated_by_security.id" style="height:70px; width:auto;"/>
+                            </t>
+
+                            <br/>
+
+                            <span t-field="doc.validated_by_security.name"/>
                         </td>
 
-                        <td>
-                            <strong>Approbation</strong><br/>
-                            ______________________
-                        </td>
+
+
+                    <td>
+                        <strong>Approbation</strong><br/>
+
+                        <t t-if="doc.approved_by">
+                                <img t-att-src="'/web/image/res.users/%s/signature_image' % doc.approved_by.id" style="height:70px; width:auto;"/>
+                            </t>
+
+                        <br/>
+
+                        <span t-field="doc.approved_by.name"/>
+                    </td>
+
                     </tr>
                 </table>
 

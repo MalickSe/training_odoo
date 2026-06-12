@@ -1,0 +1,214 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <!-- GRAPH VIEW -->
+    <record id="view_mission_graph" model="ir.ui.view">
+        <field name="name">mission.terrain.graph</field>
+        <field name="model">mission.terrain</field>
+        <field name="arch" type="xml">
+            <graph string="Analyse Budget Missions" type="bar">
+                <field name="project_id" type="row"/>
+                <field name="approved_amount" type="measure"/>
+                <field name="actual_amount" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <!-- GRAPH LINE -->
+    <record id="view_mission_graph_line" model="ir.ui.view">
+        <field name="name">mission.terrain.graph.line</field>
+        <field name="model">mission.terrain</field>
+        <field name="arch" type="xml">
+            <graph string="Evolution Budget" type="line">
+                <field name="date_depart" type="row"/>
+                <field name="approved_amount" type="measure"/>
+                <field name="actual_amount" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <!-- PIVOT -->
+    <record id="view_mission_pivot" model="ir.ui.view">
+        <field name="name">mission.terrain.pivot</field>
+        <field name="model">mission.terrain</field>
+        <field name="arch" type="xml">
+            <pivot string="Analyse Missions">
+                <field name="project_id" type="row"/>
+                <field name="state" type="col"/>
+                <field name="approved_amount" type="measure"/>
+                <field name="actual_amount" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <!-- SEARCH VIEW -->
+    <record id="mission_terrain_search_dashboard" model="ir.ui.view">
+    <field name="name">mission.terrain.search.dashboard</field>
+    <field name="model">mission.terrain</field>
+    <field name="arch" type="xml">
+
+        <search string="Recherche Missions">
+
+            <!-- Champs -->
+            <field name="name"/>
+            <field name="project_id"/>
+            <field name="state"/>
+            <field name="mission_type"/>
+            <field name="vehicle_id"/>
+
+            <!-- Filtres -->
+            <filter name="done"
+                    string="Terminées"
+                    domain="[('state','=','done')]"/>
+
+            <filter name="vehicule"
+                    string="Missions Véhicule"
+                    domain="[('mission_type','=','vehicule')]"/>
+        </search>
+
+    </field>
+</record>
+``
+
+
+    <record id="view_mission_kpi_logistique" model="ir.ui.view">
+    <field name="name">mission.terrain.kpi.logistique</field>
+    <field name="model">mission.terrain</field>
+    <field name="arch" type="xml">
+
+        <!-- VIEW KANBAN LOGISTIQUE -->
+        <kanban class="o_kanban_dashboard">
+            <templates>
+                <t t-name="card">
+
+                    <div style="display:flex; gap:20px; flex-wrap:wrap;">
+
+                        <div style="background:#1565C0;color:white;padding:15px;border-radius:10px;width:220px;">
+                            <strong>Projets</strong>
+                            <h2><field name="kpi_total_projects"/></h2>
+                        </div>
+
+                        <div style="background:#2E7D32;color:white;padding:15px;border-radius:10px;width:220px;">
+                            <strong>Missions Véhicule</strong>
+                            <h2><field name="kpi_total_vehicule"/></h2>
+                        </div>
+
+                        <div style="background:#F9A825;color:white;padding:15px;border-radius:10px;width:220px;">
+                            <strong>Chauffeurs</strong>
+                            <h2><field name="kpi_total_chauffeurs"/></h2>
+                        </div>
+
+                        <div style="background:#6A1B9A;color:white;padding:15px;border-radius:10px;width:220px;">
+                            <strong>Véhicules utilisés</strong>
+                            <h2><field name="kpi_total_vehicles"/></h2>
+                        </div>
+
+                    </div>
+
+                </t>
+            </templates>
+        </kanban>
+
+    </field>
+</record>
+
+    <!-- VIEW GRAPH LOGISTIQUE -->
+<record id="view_mission_graph_logistique" model="ir.ui.view">
+    <field name="name">mission.terrain.graph.logistique</field>
+    <field name="model">mission.terrain</field>
+    <field name="arch" type="xml">
+
+        <graph string="Analyse Logistique Missions" type="bar">
+
+            <!-- Axe -->
+            <field name="mission_type" type="row"/>
+
+            <!-- Mesure -->
+            <field name="id" type="measure"/>
+
+        </graph>
+
+    </field>
+</record>
+
+    <!-- VIEW PIVOT LOGISTIQUE -->
+
+<record id="view_mission_pivot_logistique" model="ir.ui.view">
+    <field name="name">mission.terrain.pivot.logistique</field>
+    <field name="model">mission.terrain</field>
+    <field name="arch" type="xml">
+
+        <pivot string="Analyse Logistique">
+
+            <field name="project_id" type="row"/>
+
+            <field name="mission_type" type="col"/>
+
+            <field name="mission_count" type="measure"/>
+
+        </pivot>
+
+    </field>
+</record>
+
+
+<record id="view_graph_vehicle_usage_rate" model="ir.ui.view">
+    <field name="name">mission.terrain.graph.usage.rate</field>
+    <field name="model">mission.terrain</field>
+    <field name="arch" type="xml">
+
+        <graph string="Taux d'utilisation des véhicules" type="bar">
+
+            <field name="vehicle_id" type="row"/>
+            <field name="vehicle_usage_rate" type="measure"/>
+
+        </graph>
+
+    </field>
+</record>
+
+    <!-- ACTION -->
+
+<record id="action_mission_kpi_logistique" model="ir.actions.act_window">
+    <field name="name">KPI Logistique</field>
+    <field name="res_model">mission.terrain</field>
+    <field name="view_mode">kanban,graph,pivot,list</field>
+    <field name="domain">[(1,'=',1)]</field>
+    <field name="limit">1</field>
+
+ <field name="view_ids" eval="[
+        (5, 0, 0),
+        (0, 0, {'view_mode': 'kanban', 'view_id': ref('mission_terrain.view_mission_kpi_logistique')}),
+        (0, 0, {'view_mode': 'graph', 'view_id': ref('mission_terrain.view_mission_graph_logistique')}),
+        (0, 0, {'view_mode': 'pivot', 'view_id': ref('mission_terrain.view_mission_pivot_logistique')})
+    ]"/>
+
+</record>
+
+<record id="action_mission_kpi_finance" model="ir.actions.act_window">
+    <field name="name">KPI Finance</field>
+    <field name="res_model">mission.terrain</field>
+    <field name="view_mode">graph,pivot,list</field>
+
+</record>
+
+    <!-- MENU REPORTING -->
+<menuitem id="menu_mission_reporting"
+          name="Dashboard Missions"
+          parent="mission_terrain.menu_mission_root"
+          sequence="50"/>
+
+<!-- KPI FINANCE -->
+<menuitem id="menu_kpi_finance"
+          name="KPI Finance"
+          parent="menu_mission_reporting"
+          action="mission_terrain.action_mission_kpi_finance"
+          sequence="10"/>
+
+<!-- KPI LOGISTIQUE -->
+<menuitem id="menu_mission_kpi_logistique"
+          name="KPI Logistique"
+          parent="mission_terrain.menu_mission_reporting"
+          action="mission_terrain.action_mission_kpi_logistique"
+          sequence="20"/>
+</odoo>

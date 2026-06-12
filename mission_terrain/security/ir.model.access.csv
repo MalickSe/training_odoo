@@ -1,3 +1,4 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 access_mission_terrain,mission.terrain,model_mission_terrain,base.group_user,1,1,1,1
 access_mission_participant,mission.participant,model_mission_participant,base.group_user,1,1,1,1
+access_deplacement,access_deplacement,model_mission_deplacement,base.group_user,1,1,1,1
